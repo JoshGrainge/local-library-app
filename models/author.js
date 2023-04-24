@@ -14,10 +14,13 @@ AuthorSchema.virtual("name").get( function (){
   // To avoid errors in cases where an author does not have either a family name or first name
   // We want to make sure we handle the exception by returning an empty string for that case
   let fullname = '';
+  if(this.first_name || this.last_name){
+    fullname =`${[this.first_name, this.last_name].join()}`;
+  }
   if(this.first_name && this.last_name){
     fullname = `${this.first_name} ${this.last_name}`;
   }
-  if(!this.first_name || !this.last_name){
+  if(!this.first_name && !this.last_name){
     fullname = '';
   }
 
