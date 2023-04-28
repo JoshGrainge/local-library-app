@@ -159,6 +159,50 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
 });
 
 // Handle Author update on POST.
-exports.author_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Author update POST");
-});
+exports.author_update_post = [
+  body('first_name', 'first name cannot be empty')
+    .trim()
+    .isLength({ min: 1 })    
+    .escape(),
+  body('last_name', 'last name cannot be empty')
+    .trim()
+    .isLength({ min: 1 })  
+    .escape(),
+  body('date_of_birth', 'date of birth cannot be empty')
+    .trim()
+    .isLength({ min: 1 })  
+    .escape()
+    .isISO8601(),
+  body('date_of_death', 'Invalid date')
+    .optional({ checkFalsy: true })
+    .trim()
+    .escape()
+    .isISO8601(),
+
+    asyncHandler(async (req, res, next) => {
+      // Extract the validation errors from a request
+      const errors = validationResult(req);
+
+      // Create a author object with escaped/trimmed data and old id
+      const author = new Author({
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        date_of_birth: req.body.date_of_birth,
+        date_of_death: req.body.date_of_death,
+        _id: req.params.id
+      });
+
+      if (!errors.isEmpty()) {
+        // There are errors. Render form again with sanitized values
+
+        res.render('author_form', {
+          title: 'Update Author',
+          author: author,
+        });
+      } else {
+        // Date from form is valid. Update the record
+        const updatedAuthor = await Author.findByIdAndUpdate(req.params.id, author, {});
+        res.redirect(updatedAuthor.url);
+      }
+    })
+];
