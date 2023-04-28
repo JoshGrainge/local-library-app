@@ -139,7 +139,23 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display Author update form on GET.
 exports.author_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Author update GET");
+  const [author, authorBooks] = await Promise.all([
+    Author.findById(req.params.id).exec(),
+    Book.find({ author: req.params.id }).exec(),
+  ]);
+
+  if (author === null) {
+    // Author does not exist
+    const err = new Error('Author not found');
+    err.status = 404;
+    return next(err);
+  }
+
+  res.render('author_form', {
+    title: 'Update Author',
+    author: author,
+    author_books: authorBooks
+  });
 });
 
 // Handle Author update on POST.
