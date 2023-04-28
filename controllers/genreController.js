@@ -121,7 +121,13 @@ exports.genre_delete_post = asyncHandler(async (req, res, next) => {
 
 // Display Genre update form on GET.
 exports.genre_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Genre update GET");
+  // Get genre to populate view
+  const genre = await Genre.findById(req.params.id);
+
+  res.render('genre_form', {
+    title: 'Create Genre',
+    genre: genre,
+  });
 });
 
 // Handle Genre update on POST.
