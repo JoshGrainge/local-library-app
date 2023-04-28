@@ -122,7 +122,7 @@ exports.genre_delete_post = asyncHandler(async (req, res, next) => {
 // Display Genre update form on GET.
 exports.genre_update_get = asyncHandler(async (req, res, next) => {
   // Get genre to populate view
-  const genre = await Genre.findById(req.params.id);
+  const genre = await Genre.findById(req.params.id).exec();
 
   res.render('genre_form', {
     title: 'Create Genre',
@@ -132,5 +132,30 @@ exports.genre_update_get = asyncHandler(async (req, res, next) => {
 
 // Handle Genre update on POST.
 exports.genre_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Genre update POST");
+  const genre = await Genre.findById(req.params.id).exec();
+
+  if (genre === null) {
+    // No results
+    const err = new Error('Genre not found');
+    err.status = 404;
+    return next(err);
+  }
+
+  body('name', 'Genre must not be empty')
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+
+  if (genre !== null) {
+    const newGenre = new Genre({
+      name: req.body.name,
+      _id: req.params.id,
+    })
+
+    // Update genre if one exists
+    const updatedGenre = await Genre.findByIdAndUpdate(req.params.id, newGenre, {});
+    res.redirect(updatedGenre.url);
+  } else {
+    res.redirect('/catalog/genre');
+  }
 });
